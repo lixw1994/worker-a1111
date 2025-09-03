@@ -1,0 +1,13 @@
+{
+  "input": {
+    "api": "txt2img",
+    "prompt": "beautiful portrait of a woman with flowing hair, masterpiece, highly detailed, <lora:lcm:1.0>",
+    "negative_prompt": "blurry, bad quality, distorted, ugly",
+    "width": 512,
+    "height": 768,
+    "steps": 8,
+    "cfg_scale": 2.0,
+    "sampler_name": "LCM",
+    "seed": 123456
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "input": {
+    "api": "img2img",
+    "prompt": "a beautiful landscape painting in watercolor style",
+    "negative_prompt": "blurry, bad quality, distorted",
+    "init_images": ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="],
+    "denoising_strength": 0.7,
+    "width": 512,
+    "height": 512,
+    "steps": 20,
+    "cfg_scale": 7,
+    "sampler_name": "DPM++ 2M Karras",
+    "seed": 42
+  }
+}

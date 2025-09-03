@@ -1,11 +1,12 @@
 {
   "input": {
+    "api": "txt2img",
     "prompt": "a photo of an astronaut riding a horse on mars",
     "negative_prompt": "blurry, bad quality",
     "width": 512,
     "height": 512,
-    "num_inference_steps": 20,
-    "guidance_scale": 7.5,
+    "steps": 8,
+    "cfg_scale": 2.0,
     "seed": 42
   }
 }

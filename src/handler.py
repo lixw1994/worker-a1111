@@ -35,13 +35,47 @@ def wait_for_service(url):
         time.sleep(0.2)
 
 
-def run_inference(inference_request):
+def run_txt2img(inference_request):
     """
-    Run inference on a request.
+    Run text-to-image inference.
     """
     response = automatic_session.post(url=f'{LOCAL_URL}/txt2img',
-                                      json=inference_request, timeout=600)
+                                      json=inference_request, timeout=90)
     return response.json()
+
+
+def run_img2img(inference_request):
+    """
+    Run image-to-image inference.
+    """
+    response = automatic_session.post(url=f'{LOCAL_URL}/img2img',
+                                      json=inference_request, timeout=90)
+    return response.json()
+
+
+def get_loras():
+    """
+    Get available loras.
+    """
+    response = automatic_session.get(url=f'{LOCAL_URL}/loras', timeout=60)
+    return response.json()
+
+
+def get_options():
+    """
+    Get current options/settings.
+    """
+    response = automatic_session.get(url=f'{LOCAL_URL}/options', timeout=60)
+    return response.json()
+
+
+def set_options(options):
+    """
+    Set options/settings.
+    """
+    response = automatic_session.post(url=f'{LOCAL_URL}/options',
+                                      json=options, timeout=60)
+    return response.json() if response.text else {"status": "success"}
 
 
 # ---------------------------------------------------------------------------- #
@@ -50,12 +84,40 @@ def run_inference(inference_request):
 def handler(event):
     """
     This is the handler function that will be called by the serverless.
+    Supports multiple API endpoints based on the 'api' field in the input.
     """
-
-    json = run_inference(event["input"])
-
-    # return the output that you want to be returned like pre-signed URLs to output artifacts
-    return json
+    input_data = event["input"]
+    api_endpoint = input_data.get("api", "txt2img")
+    
+    try:
+        if api_endpoint == "txt2img":
+            # Remove 'api' field from input before sending to API
+            api_input = {k: v for k, v in input_data.items() if k != "api"}
+            return run_txt2img(api_input)
+        
+        elif api_endpoint == "img2img":
+            # Remove 'api' field from input before sending to API
+            api_input = {k: v for k, v in input_data.items() if k != "api"}
+            return run_img2img(api_input)
+        
+        elif api_endpoint == "getLoras":
+            return get_loras()
+        
+        elif api_endpoint == "getOptions":
+            return get_options()
+        
+        elif api_endpoint == "setOptions":
+            # Remove 'api' field from input before sending to API
+            options = {k: v for k, v in input_data.items() if k != "api"}
+            return set_options(options)
+        
+        else:
+            return {"error": f"Unsupported API endpoint: {api_endpoint}"}
+    
+    except requests.exceptions.RequestException as e:
+        return {"error": f"API request failed: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Handler error: {str(e)}"}
 
 
 if __name__ == "__main__":

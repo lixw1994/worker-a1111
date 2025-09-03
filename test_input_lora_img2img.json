@@ -1,0 +1,15 @@
+{
+  "input": {
+    "api": "img2img",
+    "prompt": "artistic portrait in renaissance style, <lora:lcm:0.8>",
+    "negative_prompt": "blurry, bad quality, modern",
+    "init_images": ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="],
+    "denoising_strength": 0.6,
+    "width": 512,
+    "height": 512,
+    "steps": 6,
+    "cfg_scale": 1.8,
+    "sampler_name": "LCM",
+    "seed": 789012
+  }
+}
