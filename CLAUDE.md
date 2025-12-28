@@ -28,10 +28,6 @@ This is a RunPod serverless worker that runs Automatic1111 Stable Diffusion WebU
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Two Dockerfiles**:
-- `Dockerfile`: Production build - downloads Deliberate v6 model from HuggingFace
-- `Dockerfile.local`: Local development - uses models from local `models/` directory
-
 ## Development Commands
 
 ### Build (local development with custom models)
@@ -189,10 +185,3 @@ When using LCM LoRA, recommended settings:
 ```
 
 If no `api` field is provided, it defaults to `txt2img` for backward compatibility.
-
-## CI/CD
-
-- **CD-docker_release.yml**: Builds and pushes Docker image on GitHub release
-- **CD-docker_dev.yml**: Development builds
-- **CI-runpod_dep.yml**: RunPod dependency checks
-- **`.runpod/tests.json`**: RunPod test configuration (basic_test with RTX 4090)

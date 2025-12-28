@@ -19,7 +19,7 @@ variable "GIT_VERSION" {
 }
 
 target "default" {
-    dockerfile = "Dockerfile.local"
+    dockerfile = "Dockerfile"
     platforms = ["linux/amd64"]
     tags = ["${REGISTRY}/${REGISTRY_USER}/${APP}:${MODEL_NAME}.${GIT_VERSION}.runpod_post3"]
     args = {
