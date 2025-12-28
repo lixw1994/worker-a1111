@@ -1,6 +1,5 @@
 FROM python:3.10.14-slim
 
-ARG MODEL_NAME=awportrait_v14
 ARG APP_NAME=a1111-serverless
 ARG GIT_VERSION=v1.9.3
 ARG GIT_REPO_URL=https://github.com/AUTOMATIC1111/stable-diffusion-webui.git
@@ -32,6 +31,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
 
 # add local models
+ARG MODEL_NAME=sdxl
+
 COPY models/${MODEL_NAME}/model.safetensors /model.safetensors
 COPY models/${MODEL_NAME}/ControlNet/* /stable-diffusion-webui/models/ControlNet/
 COPY models/${MODEL_NAME}/embeddings/* /stable-diffusion-webui/models/embeddings/

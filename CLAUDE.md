@@ -4,26 +4,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a RunPod serverless worker that runs Automatic1111 Stable Diffusion WebUI and exposes its `txt2img` API endpoint. The project is containerized and designed to run on RunPod's serverless infrastructure.
+This is a RunPod serverless worker that runs Automatic1111 Stable Diffusion WebUI and exposes its API endpoints (txt2img, img2img, LoRA management, options). The project is containerized and designed to run on RunPod's serverless infrastructure.
 
 ## Architecture
 
-The project follows a simple serverless architecture:
+```
+┌─────────────────────────────────────────────────────────┐
+│  RunPod Serverless Event                                │
+│  {"input": {"api": "txt2img", "prompt": "..."}}         │
+└─────────────────────┬───────────────────────────────────┘
+                      │
+┌─────────────────────▼───────────────────────────────────┐
+│  src/handler.py (RunPod Handler)                        │
+│  - Routes requests by 'api' field                       │
+│  - Proxies to Automatic1111 WebUI API                   │
+│  - Retry logic with exponential backoff                 │
+└─────────────────────┬───────────────────────────────────┘
+                      │ http://127.0.0.1:3000/sdapi/v1/*
+┌─────────────────────▼───────────────────────────────────┐
+│  Automatic1111 WebUI (API mode, no web interface)       │
+│  - Launched by src/start.sh                             │
+│  - Uses tcmalloc for memory optimization                │
+└─────────────────────────────────────────────────────────┘
+```
 
-1. **Container Structure**: Uses multi-stage Docker builds to download models and setup the runtime environment
-2. **Service Layer**: `src/handler.py` - RunPod serverless handler that acts as a proxy to the Automatic1111 WebUI API
-3. **Runtime**: `src/start.sh` - Startup script that launches both the WebUI API service and the RunPod handler
-4. **Models**: Pre-packaged models stored in `models/` directory, copied into container during build
+**Two Dockerfiles**:
+- `Dockerfile`: Production build - downloads Deliberate v6 model from HuggingFace
+- `Dockerfile.local`: Local development - uses models from local `models/` directory
 
 ## Development Commands
 
-### Build and Test
+### Build (local development with custom models)
 ```bash
-# Build using docker-bake (recommended)
+# Build with default model (sdxl)
 docker buildx bake
 
-# Build using docker-bake with custom model
-docker buildx bake --set default.args.MODEL_NAME=dreamshaper
+# Build with specific model
+docker buildx bake --set default.args.MODEL_NAME=awportrait_v14
+
+# Available models: awportrait_v14, dreamshaper, dreamshaper_xl, sd15, sdxl
+```
+
+### Run Container Locally
+```bash
+# Run the built image (requires NVIDIA GPU)
+docker run --gpus all -p 8000:8000 <image_tag>
 ```
 
 ### Testing
@@ -77,17 +102,15 @@ The container sets several environment variables for optimal performance:
 
 Models are organized in the `models/` directory by model name:
 ```
-models/
-├── awportrait_v14/
-│   ├── ControlNet/
-│   ├── Lora/
-│   ├── VAE/
-│   ├── embeddings/
-│   └── model.safetensors
-└── dreamshaper/
+models/<MODEL_NAME>/
+├── ControlNet/       → /stable-diffusion-webui/models/ControlNet/
+├── Lora/             → /stable-diffusion-webui/models/Lora/
+├── VAE/              → /stable-diffusion-webui/models/VAE/
+├── embeddings/       → /stable-diffusion-webui/models/embeddings/
+└── model.safetensors → /model.safetensors
 ```
 
-The build process copies the appropriate model files to the container's Automatic1111 installation directories.
+To add a new model, create a directory under `models/` with the required subdirectories and files.
 
 ## API Interface
 
@@ -167,15 +190,9 @@ When using LCM LoRA, recommended settings:
 
 If no `api` field is provided, it defaults to `txt2img` for backward compatibility.
 
-## Service Dependencies
+## CI/CD
 
-- **runpod**: Python SDK for RunPod serverless integration
-- **requests**: HTTP client with retry logic for API communication
-- **Automatic1111 WebUI**: Core Stable Diffusion service running on port 3000
-
-## Development Notes
-
-- The handler includes retry logic and service health checks to ensure reliability
-- Memory management is optimized using tcmalloc
-- The WebUI runs in API-only mode without the web interface for better performance
-- Container uses Python 3.10 with specific package versions for stability
+- **CD-docker_release.yml**: Builds and pushes Docker image on GitHub release
+- **CD-docker_dev.yml**: Development builds
+- **CI-runpod_dep.yml**: RunPod dependency checks
+- **`.runpod/tests.json`**: RunPod test configuration (basic_test with RTX 4090)
